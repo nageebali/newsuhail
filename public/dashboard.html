@@ -1,0 +1,1031 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة التحكم - إدارة واتساب</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #25D366;
+            --secondary-color: #128C7E;
+            --dark-color: #075E54;
+            --light-color: #DCF8C6;
+            --danger-color: #dc3545;
+            --gray-color: #f8f9fa;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+        
+        .sidebar {
+            background-color: var(--dark-color);
+            color: white;
+            width: 250px;
+            height: 100vh;
+            position: fixed;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        
+        .sidebar-header {
+            text-align: center;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .sidebar-menu {
+            margin-top: 20px;
+        }
+        
+        .sidebar-menu a {
+            display: block;
+            color: white;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            text-decoration: none;
+            transition: background-color 0.3s;
+        }
+        
+        .sidebar-menu a:hover, .sidebar-menu a.active {
+            background-color: var(--secondary-color);
+        }
+        
+        .sidebar-menu i {
+            margin-left: 10px;
+        }
+        
+        .main-content {
+            margin-right: 250px;
+            padding: 20px;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .btn {
+            padding: 8px 15px;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .btn-danger {
+            background-color: var(--danger-color);
+            color: white;
+        }
+        
+        .btn-sm {
+            padding: 5px 10px;
+            font-size: 12px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th, td {
+            padding: 12px 15px;
+            text-align: right;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        th {
+            background-color: var(--gray-color);
+        }
+        
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .status-ready {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .status-qr {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        
+        .status-disconnected {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        
+        .qr-modal, .message-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .qr-content, .message-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            width: 80%;
+            max-width: 500px;
+        }
+        
+        #qrImage {
+            max-width: 300px;
+            margin: 20px 0;
+        }
+        
+        .logout-btn {
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        
+        /* Message styling */
+        .message-container {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-bottom: 15px;
+            border: 1px solid #eee;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        
+        .message {
+            padding: 8px 12px;
+            margin: 5px 0;
+            border-radius: 8px;
+            max-width: 70%;
+        }
+        
+        .received {
+            background-color: #e5e5ea;
+            margin-right: auto;
+        }
+        
+        .sent {
+            background-color: var(--light-color);
+            margin-left: auto;
+            text-align: left;
+        }
+        
+        .message-time {
+            font-size: 11px;
+            color: #666;
+            margin-top: 3px;
+        }
+        
+        .message-form {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .message-form input {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        /* Tab styling */
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 15px;
+        }
+        
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+        }
+        
+        .tab.active {
+            border-bottom-color: var(--primary-color);
+            font-weight: bold;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        .horizontal-message-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 20px 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.horizontal-message-table th {
+  background-color: #4a6fa5;
+  color: white;
+  padding: 12px 15px;
+  text-align: left;
+  font-weight: 600;
+}
+
+.horizontal-message-table td {
+  padding: 10px 15px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.horizontal-message-table tr:last-child td {
+  border-bottom: none;
+}
+
+.horizontal-message-table tr:hover {
+  background-color: #f5f7fa;
+}
+
+.message-row.sent {
+  background-color: #f0f8ff;
+}
+
+.message-row.received {
+  background-color: #fffaf0;
+}
+
+/* تنسيق خاص للحالة */
+.horizontal-message-table td:nth-child(5) {
+  font-weight: bold;
+  text-transform: capitalize;
+}
+
+.horizontal-message-table td:nth-child(5).delivered {
+  color: #2e8b57;
+}
+
+.horizontal-message-table td:nth-child(5).failed {
+  color: #dc143c;
+}
+
+/* جعل الجدول متجاوب */
+@media (max-width: 768px) {
+  .horizontal-message-table {
+    display: block;
+    overflow-x: auto;
+  }
+
+}
+.messages-container {
+  position: relative;
+  height: 500px; /* ارتفاع ثابت للكونتينر */
+  overflow: hidden;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+}
+
+.table-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background-color: white;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.table-body {
+  height: calc(100% - 40px);
+  overflow-y: auto;
+}
+
+.fixed-header, .scrollable-body {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.fixed-header th {
+  background-color: #4a6fa5;
+  color: white;
+  padding: 12px 15px;
+  text-align: left;
+  position: sticky;
+  top: 0;
+}
+
+.scrollable-body td {
+  padding: 12px 15px;
+  border-bottom: 1px solid #eee;
+}
+
+/* تنسيق الصفوف */
+.message-row.sent {
+  background-color: #f0f8ff;
+}
+
+.message-row.received {
+  background-color: #fffaf0;
+}
+
+/* تنسيق الخلايا */
+.direction-cell.outgoing {
+  color: #2e8b57;
+  font-weight: bold;
+}
+
+.direction-cell.incoming {
+  color: #4169e1;
+  font-weight: bold;
+}
+
+.status-cell.delivered {
+  color: #2e8b57;
+}
+
+.status-cell.failed {
+  color: #dc143c;
+}
+
+.status-cell.pending {
+  color: #ff8c00;
+}
+
+/* شريط التمرير */
+.table-body::-webkit-scrollbar {
+  width: 8px;
+}
+
+.table-body::-webkit-scrollbar-thumb {
+  background-color: #c1c1c1;
+  border-radius: 4px;
+}
+/* تنسيق الحاوية الرئيسية */
+#messagesContainer {
+    width: 100%;
+    height: 500px; /* ارتفاع ثابت */
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+/* تنسيق رأس الجدول الثابت */
+.table-header {
+    width: 100%;
+    background-color: #4a6fa5;
+}
+
+.header-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.header-table th {
+    padding: 15px;
+    text-align: right;
+    color: white;
+    font-weight: bold;
+    position: sticky;
+    top: 0;
+    background-color: #4a6fa5;
+}
+
+/* تنسيق جسم الجدول القابل للتمرير */
+.table-body {
+    flex: 1;
+    overflow-y: auto;
+    width: 100%;
+}
+
+.body-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.body-table td {
+    padding: 12px 15px;
+    border-bottom: 1px solid #e0e0e0;
+    text-align: right;
+}
+
+/* تنسيق الصفوف */
+.message-row.sent {
+    background-color: #f0f8ff;
+}
+
+.message-row.received {
+    background-color: #fffaf0;
+}
+
+/* تنسيق الحالة */
+.status-sent {
+    color: #2e8b57;
+    font-weight: bold;
+}
+
+.status-received {
+    color: #4169e1;
+    font-weight: bold;
+}
+
+/* شريط التمرير */
+.table-body::-webkit-scrollbar {
+    width: 8px;
+}
+
+.table-body::-webkit-scrollbar-thumb {
+    background-color: #c1c1c1;
+    border-radius: 4px;
+}
+
+/* رسالة الخطأ */
+.error-message {
+    color: #dc143c;
+    padding: 20px;
+    text-align: center;
+    font-weight: bold;
+}
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h2>إدارة واتساب</h2>
+        </div>
+        <div class="sidebar-menu">
+            <a href="#" class="active"><i class="fas fa-home"></i> الرئيسية</a>
+            <a href="#sessions"><i class="fas fa-comment"></i> الجلسات</a>
+            <a href="#messages"><i class="fas fa-envelope"></i> الرسائل</a>
+            <a href="#new-session"><i class="fas fa-plus"></i> جلسة جديدة</a>
+            <a href="#" id="logoutBtn" class="logout-btn"><i class="fas fa-sign-out-alt"></i> تسجيل الخروج</a>
+        </div>
+    </div>
+    
+    <div class="main-content">
+        <div class="header">
+            <h2>مرحبًا بك في لوحة التحكم</h2>
+            <div id="userInfo"></div>
+            <div id="userinstanc"></div>
+            <div id="phoneNumber"></div>
+            <div id="username"></div>
+        </div>
+        
+        <div class="tabs">
+            <div class="tab active" data-tab="sessions">الجلسات النشطة</div>
+            <div class="tab" data-tab="messages">إدارة الرسائل</div>
+        </div>
+        
+        <div class="tab-content active" id="sessions-tab">
+            <div class="card">
+                <div class="card-header">
+                    <h3>الجلسات النشطة</h3>
+                    <button class="btn btn-primary" id="refreshSessions">تحديث</button>
+                </div>
+                <div class="card-body">
+                    <table id="sessionsTable">
+                        <thead>
+                            <tr>
+                                <th>رقم الجلسة</th>
+                                <th>الحالة</th>
+                                <th>آخر نشاط</th>
+                                <th>الإجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- سيتم ملؤها بالبيانات -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h3>إنشاء جلسة جديدة</h3>
+                </div>
+                <div class="card-body">
+                    <form id="newSessionForm">
+                        <input type="text" id="sessionId" placeholder="معرف الجلسة (مثل: session1)" required>
+                        <button type="submit" class="btn btn-primary">إنشاء جلسة</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="tab-content" id="messages-tab">
+            <div class="card">
+                <div class="card-header">
+                    <h3>إرسال رسالة جديدة</h3>
+                </div>
+                <div class="card-body">
+                    <form id="sendMessageForm">
+                        <!-- <div>
+                            <label for="messageSession">اختر الجلسة:</label>
+                            <select id="messageSession" required>
+                                <option value="">-- اختر جلسة --</option>
+                            </select>
+                        </div> -->
+                        <div>
+                            <label for="recipientNumber">رقم المستقبل:</label>
+                            <input type="text" id="recipientNumber" placeholder="9665XXXXXXXX" required>
+                        </div>
+                        <div>
+                            <label for="messageContent">نص الرسالة:</label>
+                            <textarea id="messageContent" rows="3" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">إرسال</button>
+                    </form>
+                </div>
+          
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h3>سجل الرسائل</h3>
+                    <button class="btn btn-primary" id="refreshMessages">تحديث</button>
+                </div>
+                <div class="card-body">
+                    <div class="message-container" id="messagesContainer">
+                        <!-- سيتم ملؤها بالرسائل -->
+                    </div>
+                </div>
+          
+            </div>
+        </div>
+    </div>
+    
+    <!-- QR Code Modal -->
+    <div class="qr-modal" id="qrModal">
+        <div class="qr-content">
+            <h3>مسح رمز QR</h3>
+            <p>افتح واتساب على هاتفك، اضغط على القائمة واختر "الأجهزة المرتبطة" ثم "ربط جهاز"</p>
+            <img id="qrImage" src="" alt="QR Code">
+            <button class="btn btn-primary" id="closeQrModal">إغلاق</button>
+        </div>
+    </div>
+    
+    <!-- Message Modal -->
+    <div class="message-modal" id="messageModal">
+        <div class="message-content">
+            <h3>إرسال رسالة</h3>
+            <div>
+                <label for="modalRecipient">إلى:</label>
+                <input type="text" id="modalRecipient" placeholder="رقم الهاتف">
+            </div>
+            <div>
+                <label for="modalMessage">الرسالة:</label>
+                <textarea id="modalMessage" rows="3"></textarea>
+            </div>
+            <div>
+                <button class="btn btn-primary" id="sendMessageBtn">إرسال</button>
+                <button class="btn btn-danger" id="cancelMessageBtn">إلغاء</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // التحقق من تسجيل الدخول
+        const userId = localStorage.getItem('userId');
+        const instanstoken = localStorage.getItem('instanstoken');
+        const username = localStorage.getItem('username');
+        const phoneNumber = localStorage.getItem('phoneNumber');
+
+        if (!userId) {
+            window.location.href = 'login.html';
+        }
+        
+        document.getElementById('userInfo').textContent = `رقم #${userId}`;
+        document.getElementById('phoneNumber').textContent = `المستخدم: ${phoneNumber}`;
+        document.getElementById('userinstanc').textContent = `Token: ${instanstoken}`;
+        document.getElementById('username').textContent = `اسم المستخدم: ${username}`;
+        
+        // تسجيل الخروج
+        document.getElementById('logoutBtn').addEventListener('click', function() {
+            localStorage.removeItem('userId');
+            localStorage.removeItem('instanstoken');
+            localStorage.removeItem('username');
+            localStorage.removeItem('phoneNumber');
+            window.location.href = 'login.html';
+        });
+        
+        // Tab switching
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                
+                this.classList.add('active');
+                document.getElementById(`${this.dataset.tab}-tab`).classList.add('active');
+            });
+        });
+        
+        // عرض الجلسات
+        async function loadSessions() {
+            try {
+                const response = await fetch('/clients');
+                const sessions = await response.json();
+                
+                const tbody = document.querySelector('#sessionsTable tbody');
+                tbody.innerHTML = '';
+                
+                // Update session dropdown for messaging
+                const sessionSelect = document.getElementById('messageSession');
+                sessionSelect.innerHTML = '<option value="">-- اختر جلسة --</option>';
+                
+                sessions.forEach(session => {
+                    const tr = document.createElement('tr');
+                    
+                    let statusBadge = '';
+                    if (session.status === 'READY') {
+                        statusBadge = '<span class="status-badge status-ready">جاهز</span>';
+                    } else if (session.status === 'QR_GENERATED') {
+                        statusBadge = '<span class="status-badge status-qr">بانتظار QR</span>';
+                    } else {
+                        statusBadge = '<span class="status-badge status-disconnected">غير متصل</span>';
+                    }
+                    
+                    tr.innerHTML = `
+                        <td>${session.id}</td>
+                        <td>${statusBadge}</td>
+                        <td>${session.lastActivity}</td>
+                        <td>
+                            ${session.status === 'QR_GENERATED' ? 
+                              `<button class="btn btn-primary btn-sm show-qr" data-id="${session.id}">عرض QR</button>` : ''}
+                            ${session.status === 'READY' ? 
+                              `<button class="btn btn-primary btn-sm send-message" data-id="${session.id}">إرسال رسالة</button>` : ''}
+                            <button class="btn btn-danger btn-sm delete-session" data-id="${session.id}">حذف</button>
+                        </td>
+                    `;
+                    
+                    tbody.appendChild(tr);
+                    
+                    // Add to session dropdown if ready
+                    if (session.status === 'READY') {
+                        const option = document.createElement('option');
+                        option.value = session.id;
+                        option.textContent = session.id;
+                        sessionSelect.appendChild(option);
+                    }
+                });
+                
+              
+            
+                // إضافة أحداث للأزرار
+                document.querySelectorAll('.show-qr').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        showQrCode(this.getAttribute('data-id'));
+                    });
+                });
+                
+                document.querySelectorAll('.send-message').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const sessionId = this.getAttribute('data-id');
+                        openMessageModal(sessionId);
+                    });
+                });
+                
+                document.querySelectorAll('.delete-session').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        if (confirm('هل أنت متأكد من حذف هذه الجلسة؟')) {
+                            deleteSession(this.getAttribute('data-id'));
+                        }
+                    });
+                });
+                
+            } catch (error) {
+                console.error('Error loading sessions:', error);
+            }
+        }
+        
+        // عرض QR Code
+        async function showQrCode(sessionId) {
+            try {
+                const response = await fetch(`/client-status/${sessionId}`);
+                const data = await response.json();
+                
+                if (data.qrCode) {
+                    document.getElementById('qrImage').src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(data.qrCode)}`;
+                    document.getElementById('qrModal').style.display = 'flex';
+                }
+            } catch (error) {
+                console.error('Error fetching QR code:', error);
+            }
+        }
+        
+        // فتح نافذة الرسالة
+        function openMessageModal(sessionId = '') {
+            document.getElementById('messageModal').style.display = 'flex';
+            if (sessionId) {
+                document.getElementById('modalRecipient').value = '';
+                document.getElementById('modalMessage').value = '';
+                document.getElementById('sendMessageBtn').dataset.sessionId = sessionId;
+            }
+        }
+        
+        // حذف الجلسة
+        async function deleteSession(sessionId) {
+            try {
+                const response = await fetch(`/api/session/${sessionId}`, {
+                    method: 'DELETE'
+                });
+                
+                if (response.ok) {
+                    loadSessions();
+                }
+            } catch (error) {
+                console.error('Error deleting session:', error);
+            }
+        }
+        
+        // إنشاء جلسة جديدة
+        document.getElementById('newSessionForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const sessionId = document.getElementById('sessionId').value;
+           // const instanstoken = document.getElementById('userinstanc').value;
+            const instanstoken = localStorage.getItem('instanstoken');
+            //  const instanstoken2= document.getElementById('userinstanc').value;
+            try {
+                const response = await fetch(`/add/${sessionId}`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer  ' + {instanstoken}
+                 
+                    },
+                  body: JSON.stringify({
+                    instanstoken,
+                    sessionId
+              
+            })
+        });
+                const data = await response.json();
+                
+                if (response.ok) {
+                   await alert('تم إنشاء الجلسة بنجاح! قم بمسح QR Code لتفعيلها.');
+                   await loadSessions();
+                  await  showQrCode(sessionId);
+                } else {
+                    alert(data.error || 'فشل في إنشاء الجلسة');
+                }
+            } catch (error) {
+                console.error('Error creating session:', error);
+            }
+        });
+        
+        // إرسال رسالة
+      // إرسال رسالة
+document.getElementById('sendMessageForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+   // const sessionId = document.getElementById('messageSession').value;
+    const phone = document.getElementById('recipientNumber').value.trim();
+    const text = document.getElementById('messageContent').value;
+    const userinstanc=document.getElementById('userinstanc').value;
+    // Validate inputs
+    // if (!sessionId) {
+    //     showAlert('الرجاء اختيار جلسة', 'danger');
+    //     return;
+    // }
+    if (!phone) {
+        showAlert('الرجاء إدخال رقم الهاتف', 'danger');
+        return;
+    }
+    if (!text) {
+        showAlert('الرجاء إدخال نص الرسالة', 'danger');
+        return;
+    }
+
+    // Show loading state
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    const originalBtnText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الإرسال... '+instanstoken;
+    submitBtn.disabled = true;
+
+    try {
+        const response = await fetch(`/send2/${instanstoken}/`, {
+            method: 'POST',
+            headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer  ' + {instanstoken}
+                 
+                    },
+            body: JSON.stringify({
+             phone,
+                text
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(data.error || 'فشل في إرسال الرسالة');
+        }
+        
+        showAlert('تم إرسال الرسالة بنجاح', 'success');
+        document.getElementById('sendMessageForm').reset();
+        loadMessages();
+        
+    } catch (error) {
+        console.error('Error sending message:', error);
+        showAlert(error.message || 'حدث خطأ أثناء إرسال الرسالة', 'danger');
+    } finally {
+        // Reset button state
+        submitBtn.innerHTML = originalBtnText;
+        submitBtn.disabled = false;
+    }
+});
+
+// Helper function to show alerts
+function showAlert(message, type) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type}`;
+    alertDiv.innerHTML = `
+        <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i> 
+        ${message}
+    `;
+    
+    const messageResult = document.getElementById('messageResult');
+   // messageResult.innerHTML = '';
+   // messageResult.appendChild(alertDiv);
+    
+    // Remove alert after 5 seconds
+    setTimeout(() => {
+        alertDiv.remove();
+    }, 5000);
+}
+           
+    
+    
+    
+    
+        async function sendMessage(e) {
+            e.preventDefault();
+            
+            // const sessionId = document.getElementById('selectedSession').value;
+            // const phoneNumber = document.getElementById('phoneNumber').value.trim();
+            // const messageText = document.getElementById('messageText').value.trim();
+             const sessionId = document.getElementById('messageSession').value;
+            const phone = document.getElementById('recipientNumber').value.trim();
+            const text = document.getElementById('messageContent').value.trim();
+           
+
+            if ( !phone || !text) {
+                showAlert('الرجاء ملء جميع الحقول', 'warning');
+                return;
+            }
+            
+            const messageResult = document.getElementById('messageResult');
+            const userinstanc=document.getElementById('userinstanc').value;
+    
+            
+            try {
+                const response = await axios.get(`/send2/${userinstanc}?phone=${phone}&text=${encodeURIComponent(text)}`);
+               
+                document.getElementById('messageForm').reset();
+                loadMessages();
+            } catch (error) {
+                console.error('Error sending message:', error);
+                // messageResult.innerHTML = `
+                //     <div class="alert alert-danger">
+                //         <i class="bi bi-exclamation-circle"></i> ${error.response?.data?.error || 'فشل في إرسال الرسالة'}
+                //     </div>
+                // `;
+            }
+        }
+
+        // تحميل الرسائل
+        async function loadMessages() {
+    const instanstoken = localStorage.getItem('instanstoken');
+    if (!instanstoken) {
+        console.error('No token found');
+        return;
+    }
+
+    try {
+        const response = await fetch(`/messages/${instanstoken}/`);
+        if (!response.ok) throw new Error('Network response was not ok');
+        
+        const messages = await response.json();
+        const container = document.getElementById('messagesContainer');
+        
+        // إنشاء هيكل الجدول مع الهيدر الثابت
+        container.innerHTML = `
+            <div class="table-header">
+                <table class="header-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Phone</th>
+                            <th>Message</th>
+                            <th>Direction</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+            <div class="table-body" id="messagesBody">
+                <table class="body-table">
+                    <tbody></tbody>
+                </table>
+            </div>
+        `;
+
+        const tbody = container.querySelector('.body-table tbody');
+        
+        // إضافة الرسائل
+        messages.forEach(msg => {
+            const row = document.createElement('tr');
+            row.className = `message-row ${msg.direction === 'outgoing' ? 'sent' : 'received'}`;
+            
+            const messageDate = msg.timestamp 
+                ? new Date(msg.timestamp).toLocaleString('ar-EG') 
+                : 'غير معروف';
+            
+            row.innerHTML = `
+                <td>${msg.id || '--'}</td>
+                <td>${msg.phonenumber.replace('@c.us', '')  || '--'}</td>
+                <td>${msg.message_text || '--'}</td>
+                <td>${msg.direction === 'outgoing' ? 'صادرة' : 'واردة'}</td>
+                <td class="status-${msg.status.toLowerCase()}">${msg.status === "SENT" ? 'تم الإرسال' : 'تم الاستقبال'}</td>
+                <td>${messageDate}</td>
+            `;
+            
+            tbody.appendChild(row);
+        });
+
+        // التمرير للأسفل
+        document.querySelector('.table-body').scrollTop = 
+            document.querySelector('.table-body').scrollHeight;
+
+    } catch (error) {
+        console.error('Error loading messages:', error);
+        const container = document.getElementById('messagesContainer');
+        container.innerHTML = `<div class="error-message">خطأ في تحميل الرسائل: ${error.message}</div>`;
+    }
+}    // إغلاق نافذة QR
+        document.getElementById('closeQrModal').addEventListener('click', function() {
+            document.getElementById('qrModal').style.display = 'none';
+        });
+        
+        // إغلاق نافذة الرسالة
+        document.getElementById('cancelMessageBtn').addEventListener('click', function() {
+            document.getElementById('messageModal').style.display = 'none';
+        });
+        
+        // تحديث الجلسات
+        document.getElementById('refreshSessions').addEventListener('click', loadSessions);
+        
+        // تحديث الرسائل
+        document.getElementById('refreshMessages').addEventListener('click', loadMessages);
+        
+        // تحميل الجلسات والرسائل عند فتح الصفحة
+        loadSessions();
+        loadMessages();
+    </script>
+</body>
+</html>

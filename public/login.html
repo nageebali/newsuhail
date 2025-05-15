@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تسجيل الدخول برقم الهاتف</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f7fa;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .login-container {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+        h2 {
+            color: #25D366;
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+        }
+        .form-group {
+            margin-bottom: 1.2rem;
+            text-align: right;
+        }
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #333;
+        }
+        input {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+        input:focus {
+            border-color: #25D366;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(37, 211, 102, 0.2);
+        }
+        button {
+            background-color: #25D366;
+            color: white;
+            border: none;
+            padding: 0.8rem;
+            border-radius: 6px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 1rem;
+            font-weight: 600;
+            margin-top: 1rem;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #128C7E;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .links {
+            margin-top: 1.5rem;
+            font-size: 0.9rem;
+        }
+        a {
+            color: #25D366;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .error {
+            color: #d32f2f;
+            background-color: #fde8e8;
+            padding: 0.8rem;
+            border-radius: 6px;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            border: 1px solid #f5c2c7;
+            display: none;
+        }
+        .phone-input {
+            direction: ltr;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <h2><i class="fas fa-mobile-alt"></i> تسجيل الدخول</h2>
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="phoneNumber"><i class="fas fa-phone"></i> رقم الهاتف</label>
+                <input 
+                    type="tel" 
+                    id="phoneNumber" 
+                    class="phone-input"
+                    placeholder="مثال: 966501234567" 
+                    required
+                    pattern="[0-9]{10,15}"
+                    title="يجب أن يحتوي على 10-15 رقمًا"
+                >
+                <small>ادخل رقم الهاتف بدون علامات (+ أو -)</small>
+            </div>
+            
+            <div class="form-group">
+                <label for="password"><i class="fas fa-lock"></i> كلمة المرور</label>
+                <input 
+                    type="password" 
+                    id="password" 
+                    placeholder="أدخل كلمة المرور" 
+                    required
+                    minlength="8"
+                >
+            </div>
+            
+            <button type="submit" id="loginBtn">
+                <i class="fas fa-sign-in-alt"></i> تسجيل الدخول
+            </button>
+            
+            <div id="errorMessage" class="error"></div>
+            
+            <div class="links">
+                <a href="register.html"><i class="fas fa-user-plus"></i> إنشاء حساب جديد</a>
+                <span> | </span>
+                <a href="forgot-password.html"><i class="fas fa-key"></i> نسيت كلمة المرور؟</a>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const loginForm = document.getElementById('loginForm');
+            const phoneInput = document.getElementById('phoneNumber');
+            const passwordInput = document.getElementById('password');
+            const loginBtn = document.getElementById('loginBtn');
+            const errorMessage = document.getElementById('errorMessage');
+            
+            // تنسيق رقم الهاتف أثناء الكتابة
+            phoneInput.addEventListener('input', function(e) {
+                this.value = this.value.replace(/[^0-9]/g, '');
+            });
+            
+            loginForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const phoneNumber = phoneInput.value.trim();
+                const password = passwordInput.value;
+                
+                // إخفاء رسائل الخطأ السابقة
+                errorMessage.style.display = 'none';
+                
+                // التحقق من صحة المدخلات
+                if (!phoneNumber || phoneNumber.length < 10) {
+                    showError('رقم الهاتف يجب أن يحتوي على 10 أرقام على الأقل');
+                    return;
+                }
+                
+                if (!password || password.length < 8) {
+                    showError('كلمة المرور يجب أن تحتوي على 8 أحرف على الأقل');
+                    return;
+                }
+                
+                try {
+                    // تعطيل الزر أثناء المعالجة
+                    loginBtn.disabled = true;
+                    loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري تسجيل الدخول...';
+                    
+                    const response = await fetch('/api/login', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ 
+                            phoneNumber, 
+                            password 
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (response.ok) {
+                        // تخزين بيانات المستخدم
+                       // localStorage.setItem('authToken', data.token);
+                    localStorage.setItem('instanstoken', data.instantToken);
+                     localStorage.setItem('userId', data.id);
+                     localStorage.setItem('phoneNumber', data.phoneNumber);
+                     localStorage.setItem('username', data.username);
+
+                        // توجيه المستخدم
+                        window.location.href = 'dashboard.html';
+                    } else {
+                        showError(data.error || 'بيانات الدخول غير صحيحة');
+                    }
+                } catch (error) {
+                    console.error('Login error:', error);
+                    showError('حدث خطأ في الاتصال بالخادم');
+                } finally {
+                    // إعادة تمكين الزر
+                    loginBtn.disabled = false;
+                    loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> تسجيل الدخول';
+                }
+            });
+            
+            function showError(message) {
+                errorMessage.textContent = message;
+                errorMessage.style.display = 'block';
+                
+                // إخفاء رسالة الخطأ بعد 5 ثواني
+                setTimeout(() => {
+                    errorMessage.style.display = 'none';
+                }, 5000);
+            }
+        });
+    </script>
+    
+</body>
+</html>

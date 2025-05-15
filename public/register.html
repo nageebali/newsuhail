@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إنشاء حساب جديد</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .register-container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+        h2 {
+            color: #25D366;
+            margin-bottom: 25px;
+            font-size: 1.8rem;
+        }
+        .form-group {
+            margin-bottom: 15px;
+            text-align: right;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #333;
+        }
+        input {
+            width: 100%;
+            padding: 12px;
+            margin: 5px 0 15px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 16px;
+            transition: border 0.3s;
+        }
+        input:focus {
+            border-color: #25D366;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(37, 211, 102, 0.2);
+        }
+        button {
+            background-color: #25D366;
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 16px;
+            font-weight: 600;
+            margin-top: 10px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #128C7E;
+        }
+        .links {
+            margin-top: 20px;
+            font-size: 14px;
+        }
+        a {
+            color: #25D366;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .message {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .error {
+            color: #d32f2f;
+            background-color: #fde8e8;
+            border: 1px solid #f5c2c7;
+        }
+        .success {
+            color: #388e3c;
+            background-color: #edf7ed;
+            border: 1px solid #c3e6cb;
+        }
+        .input-hint {
+            font-size: 12px;
+            color: #666;
+            margin-top: -10px;
+            margin-bottom: 10px;
+            text-align: right;
+        }
+    </style>
+</head>
+<body>
+    <div class="register-container">
+        <h2>إنشاء حساب جديد</h2>
+        <form id="registerForm">
+            <div class="form-group">
+                <label for="username">اسم المستخدم</label>
+                <input type="text" id="username" placeholder="ادخل اسم مستخدم فريد" required>
+                <p class="input-hint">يجب أن يكون بين 4-20 حرفاً</p>
+            </div>
+            
+            <div class="form-group">
+                <label for="password">كلمة المرور</label>
+                <input type="password" id="password" placeholder="ادخل كلمة مرور قوية" required>
+                <p class="input-hint">8 أحرف على الأقل مع أرقام ورموز</p>
+            </div>
+            
+            <!-- <div class="form-group">
+                <label for="tokenwats">رمز واتساب</label>
+                <input type="text" id="tokenwats" placeholder="ادخل رمز واتساب API" required>
+                <p class="input-hint">مطلوب لربط حساب واتساب</p>
+            </div>
+             -->
+            <div class="form-group">
+                <label for="numberphone">رقم الهاتف</label>
+                <input type="tel" id="numberphone" placeholder="مثال: 966501234567" required>
+                <p class="input-hint">ادخل رقم الهاتف مع رمز الدولة</p>
+            </div>
+            
+            <button type="submit">إنشاء حساب</button>
+        </form>
+        
+        <div class="links">
+            لديك حساب بالفعل؟ <a href="login.html">سجل الدخول هنا</a>
+        </div>
+        
+        <div id="message" class="message"></div>
+    </div>
+
+    <script>
+        document.getElementById('registerForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            // إظهار تحميل
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الإنشاء...';
+            
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+            const phoneNumber = document.getElementById('numberphone').value.trim();
+            
+            // التحقق من المدخلات
+            if(!validatePhone(phoneNumber)) {
+                showMessage('رقم الهاتف غير صحيح. استخدم التنسيق الدولي', 'error');
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'إنشاء حساب';
+                return;
+            }
+            
+            try {
+                const response = await fetch('/register/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ 
+                        username, 
+                        password,
+                        phoneNumber 
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showMessage('تم إنشاء الحساب بنجاح! سيتم تحويلك لصفحة الدخول', 'success');
+                    setTimeout(() => {
+                        window.location.href = 'login.html';
+                    }, 2000);
+                } else {
+                    showMessage(data.error || 'فشل في إنشاء الحساب', 'error');
+                }
+            } catch (error) {
+                showMessage('حدث خطأ في الاتصال بالخادم', 'error');
+                console.error('Error:', error);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'إنشاء حساب';
+            }
+        });
+        
+        function showMessage(text, type) {
+            const msgElement = document.getElementById('message');
+            msgElement.textContent = text;
+            msgElement.className = 'message ' + type;
+        }
+        
+        function validatePhone(phone) {
+            // تحقق بسيط من رقم الهاتف
+            return /^[\d+]{10,15}$/.test(phone);
+        }
+    </script>
+    
+    <!-- يمكنك إضافة Font Awesome للأيقونات -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</body>
+</html>
